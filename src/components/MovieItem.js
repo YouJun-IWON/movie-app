@@ -1,7 +1,7 @@
 import { Component } from '../core/youjun';
 
 export default class MovieItem extends Component {
-  // 부모 컴포넌트(MovieList.js)를 통해 데이터를 받아서 사용하겠다. => props
+  // Will receive data through the parent component (MovieList.js) and use it. => props
   constructor(props) {
     super({
       props,
@@ -16,8 +16,8 @@ export default class MovieItem extends Component {
 
     this.el.setAttribute('href', `#/movie?id=${movie.imdbID}`);
     this.el.classList.add('movie');
-    // img 태그로 출력하게 되면 각각 다른 Poster의 크기 때문에 layout이 깨질 수 있다.
-    // 그래서 아래 코드 같이 지정한 후 a 태그의 크기를 결정해 통일한다.
+    // When outputting with a img tag, the layout may be broken due to the size of each different poster.
+    // So, designating as in the code below, determine the size of the 'a' tag and unify it.
     this.el.style.backgroundImage = `url(${movie.Poster})`;
     this.el.innerHTML = /* html */ `
     <div class="info">

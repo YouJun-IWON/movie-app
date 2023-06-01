@@ -1,5 +1,5 @@
 //! Home.js
-// home 화면을 component로 구성한다.
+// The home screen is composed of components
 
 import { Component } from '../core/youjun';
 import Headline from '../components/Headline';

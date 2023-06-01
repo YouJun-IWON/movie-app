@@ -1,5 +1,5 @@
 //! Home.js
-// home 화면에 쓰일 headline을 구성한다.
+// Compose a headline in Home.
 import { Component } from '../core/youjun';
 
 export default class Headline extends Component {

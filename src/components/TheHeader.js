@@ -35,9 +35,9 @@ export default class TheHeader extends Component {
       <ul>
         ${this.state.menus
           .map((menu) => {
-            // 이동할 페이지의 주소
+            // Address of page to move to
             const href = menu.href.split('?')[0];
-            // 실제 페이지의 주소
+            // address of real page
             const hash = location.hash.split('?')[0];
             const isActive = href === hash;
 

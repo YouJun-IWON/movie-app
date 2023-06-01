@@ -1,42 +1,42 @@
-//! youjun.js는 가장 근간이 되는 논리구조를 담당한다.
+//! 'youjun.js' is in charge of the most fundamental logical structure.
 
 ///? Component ///
-//* 해석 :
-// component 라는 클래스는 호출될 때 payload라는 매개변수를 받는다.
-// payload에서 tagName, state, props를 꺼낸다.
-// 그 다음 각각의 변수에 저장된 내용을 this를 사용해서 해당하는 각각의 변수에 할당해준다.
-// this를 통해 지정함으로써 class 안에서 만들어지는 모든 메소드(render())에서 this 라는 키워드로 참조해서 쓸 수 있다.
-// 정리하면 웹페이지에 나타낼 tag를 명시하고 tag안에 담길 데이터를 정의한다.
+//* Interpretation :
+// A class called 'component' receives a parameter called 'payload' when called.
+// Get tagName, state, and props from 'payload'.
+// Then, the contents stored in each variable are assigned to each corresponding variable using 'this'.
+// By specifying it through 'this', all methods(render()) created in the class can refer to it with the keyword 'this'.
+// To define this class, specify the tag to be displayed on the web page and define the data to be included in the tag.
 
 export class Component {
   constructor(payload = {}) {
     const { tagName = 'div', state = {}, props = {} } = payload;
     this.el = document.createElement(tagName);
-    // this.render()에서 사용할 수 있도록 선언을 해준다.
+    // It declares so that it can be used in this render().
 
-    // state는 자식이 부모의 데이터에 영향을 줄 데이터를 의미한다.
+    // 'state' means the data that the child will affect the parent's data
     this.state = state;
-    // props는 부모가 자식에게 줄 데이터를 의미한다.
-    this.props = props; 
+    // 'props' means the data parents give to children.
+    this.props = props;
 
-    // this.render를 통해 위에서 설정된 값들이 render() 를 통해 변화될 수 있도록 한다. => 다른 component들이 render()를 통해 여기에 지정된 값과 규칙을 근간으로 자신만의 모습을 가질 수 있게된다.
     this.render();
-    // 또한, 가장 기본적인 규칙을 이루고 있는 만큼 this.render()이 호출되는 함수 밑으로는 code가 작동되지 않는다. 
+    // The values set above can be changed through 'render()'. => Other components can have their own appearance based on the values and rules specified here.
   }
   render() {}
 }
 
 ///? Router ///
-//* 해석 :
-// 입력된 주소에 따라 페이지를 구분해주고 각 페이지를 routes 의 index.js를 통해 app.js 반영해줌
-// 주소에 입력받은 api와 query에 대한 데이터도 처리함
+//* Interpretation :
+// Classify Web pages according to the route(address) entered by 'index.js' of 'routes'.
+// Reflect the web components divided according to the separated routes to 'app.js'(router-view)
 function routeRender(routes) {
-  // 주소부분에 hash가 붙어 있는지 확인해서 *** 이 부분에서 발생할 수 있는 에러를 차단한다. 그리고 자동으로 component가 있는 화면으로 넘어갈 수 있게 된다.
+  // Check if hash is attached to the address part, and blocks errors that occur '***'.
+  // And automatically move to the screen where the component is located.
   if (!location.hash) {
-    history.replaceState(null, '', '/#/'); // history를 남기지 않으면서 창을 이동시킨다. => 초기화면의 주소를 설정해준다.
+    history.replaceState(null, '', '/#/'); // Moves a window without leaving history. -> Sets the address of the initial screen.
   }
 
-  //* app.js에서 지정한 movie app의 범위를 잡는다.
+  //* Scope the movie app specified in app.js
   const routerView = document.querySelector('router-view');
   // http://localhost:1234/#/about?name=youjun
   // location.hash = #/about?name=youjun
@@ -45,30 +45,30 @@ function routeRender(routes) {
   const query = queryString.split('&').reduce((acc, cur) => {
     const [key, value] = cur.split('=');
     acc[key] = value;
-    return acc; // => key(name)에 따른 value값을 객체 형태로 반환
+    return acc; // => Return value according to key(Name) in object form.
   }, {});
 
-  history.replaceState(query, ''); // query가 history 객체의 state 속성에 저장된다.
-  // 즉,위와 같이 history의 state를 통해 주소에 저장된 query문을 전처리하여 저장후 쓸 수 있다.
+  history.replaceState(query, ''); // The query is stored in the state property of the history object.
+  // In other words, through the state of history, the query statement stored in the address can be preprocessed, stored, and then used.
 
-  // 현재 페이지에 입력된 hash가 실제로 존재하는 지 확인 => 있으면 페이지 새로 랜더링 => *** 없으면 에러
+  // Check if the hash entered in the current page actually exist => If so, render the page => if not, error
   const currentRoute = routes.find((route) =>
     new RegExp(`${route.path}/?$`).test(hash)
   );
-  // routerView의 초기화
+  // Initialization of 'router-view'
   routerView.innerHTML = '';
-  // routerView에 대입
+  // Assign to routerView
   routerView.append(new currentRoute.component().el);
 
-  // 페이지 이동시 스크롤 위치 상단으로 고정
+  // When moving the page, the scroll position is fixed at the top.
   window.scrollTo(0, 0);
 }
 
-//* routes의 index.js 에서 사용되며 [{ path: '#/', component: Home }] 와 같은 형식의 데이터를 받는다.
+//* It it used in 'index.js' of routes and receives data in the format of [{ path: '#/', component: Home }].
 export function createRouter(routes) {
   return function () {
     window.addEventListener('popstate', () => {
-      // popstate : 주소 부분이 바뀌면 실행됨
+      // popstate : Fire when address part changes
       routeRender(routes);
     });
     routeRender(routes);
@@ -76,32 +76,27 @@ export function createRouter(routes) {
 }
 
 ///? store ///
-//* 해석:
-// 각각의 컴포넌트가 통신할 수 있도록 통용되는 데이터 상태를 관리해주는 store
+//* Interpretation:
+// A 'store' that manages the common data state so that each component can communicate.
 export class Store {
   constructor(state) {
-    // 저장할 상태
+    // state to save
     this.state = {};
-    // 지켜볼 상태
+    // state to observe
     this.observers = {};
     for (const key in state) {
-      // 정의하고자 하는 데이터가 새로운 값이 할당될 때마다 필요한 함수를 실행하기 위해 defineProperty를 사용한다.
-      // this.state에 key를 할당하고, 이를 조작할 함수를 정의한다.
-      // get 함수를 통해서 실제 state가 갖고 있는 데이터를 얻을 수 있게 한다.
-      // set 함수를 통해서 새로운 값을 지정한다.
+      // Use 'defineProperty' to execute the necessary function whenever a new value is assigned to the existing data.
+      // Through the 'get' function, you can get the data that the actual state has.
+      // A new value is assigned using the 'set' function.
       Object.defineProperty(this.state, key, {
         get: () => state[key],
         set: (val) => {
           state[key] = val;
-          // 아래와 같은 함수 실행
-          // this.observers['message']()
-          console.log('core' + key);
-          console.log('core' + val);
-          console.log(this.observers);
-          console.log(this.observers[key]);
 
+          // Checking whether 'this.observers[key]' is an array means that it determines whether or not to change/create a component with the changed data.
+          // In other words, if data changed by a certain event creates a new component or changes an existing state, it is necessary to create 'this.observers[key]' as an array.
           if (Array.isArray(this.observers[key])) {
-            // 호출할 콜백이 있는 경우 => 에러방지
+            // If there is a callback to call => prevent errors.
             this.observers[key].forEach((observer) => {
               observer(val);
             });
@@ -111,13 +106,13 @@ export class Store {
     }
   }
   // cb = callback function
-  // 이 함수를 통해 감시할 대상과 이벤트를 지정한다.
+  // Through this function, specify the objects and events to observe
 
   // this.observers['message'] = () => {}
-  // { message: () => {} } => 하나의 함수만을 등록할 수 있다.
-  // 즉, 하나의 컴포넌트/기능만 할 수 있는 것이다. 두개 이상의 컴포넌트에 동시에 영향을 줄 수 없다.
+  // { message: () => {} } => Only one function can be registered.
+  // That is, only one component/function can be performed. Cannot affect more than one component at the same time.
 
-  // 다음과 같은 방식으로 하면 다양한 함수를 등록하고 사용할 수 있다.
+  // Can register and use various functions in the following way.
   // { message: [ () => {}, () => {}, () => {} ] }
   subscribe(key, cb) {
     Array.isArray(this.observers[key])

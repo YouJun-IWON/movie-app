@@ -4,7 +4,7 @@ import movieStore, { getMovieDetails } from '../store/movie';
 export default class Movie extends Component {
   async render() {
     this.el.classList.add('container', 'the-movie');
-    // skeleton을 넣기 위해 표시할 부분을 지정해준다.
+    // Specifies the part to be displayed to insert the 'skeleton'.
     this.el.innerHTML = /* html */ `
       <div class="poster skeleton"></div>
         <div class="specs">
@@ -13,12 +13,15 @@ export default class Movie extends Component {
           <div class="plot skeleton"></div>
         </div>
     `;
+
+    // When entering the Movie page, the id value of 'history.state' saved by the query statement of the address is put into 'getMovieDetails'.
+    // Then, the desired data is entered into 'movieStore.state.movie' through 'movie.js'.
     await getMovieDetails(history.state.id);
-    // router 기능을 통해 history의 state에 객체데이터로 저장했기 때문에 위와 같이 데이터를 가져 올 수 있다.
+    // Since the id is stored as object data in the history state through the router function, the data can be retrieved as above.
     console.log(movieStore.state.movie);
 
     const { movie } = movieStore.state;
-    // 이미지 리사이징
+    // image resizing
     const bigPoster = movie.Poster.replace('SX300', 'SX700');
 
     this.el.innerHTML = /* html */ `
@@ -27,7 +30,7 @@ export default class Movie extends Component {
       <div class="title">${movie.Title}</div>
       <div class="labels">
         <span>${movie.Released}</span>
-        <!-- &nbsp; = 띄어쓰기 특수기호 -->
+        <!-- &nbsp; = space -->
         &nbsp;/&nbsp;
         <span>${movie.Runtime}</span>
         &nbsp;/&nbsp;
