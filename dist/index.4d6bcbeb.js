@@ -574,59 +574,86 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"gLLPy":[function(require,module,exports) {
+//! main.js
+// html에 있는 요소를 지정하여 컴포넌트로 구성된 app.js에 표시될 위치를 지정한다.
+// 이 파일은 보통 하나의 파일로만 존재하며 다양한 app.js를 html의 요소에 적재적소 하는 역할을 함 
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _app = require("./App");
 var _appDefault = parcelHelpers.interopDefault(_app);
 var _routes = require("./routes");
 var _routesDefault = parcelHelpers.interopDefault(_routes);
+// 위와 같이 설정시 index 값을 기본으로 찾아줌
 const root = document.querySelector("#root");
+// 요소 구성
 root.append(new (0, _appDefault.default)().el);
 // 요소가 먼저 있어야지 각 요소에 지정할 routes를 만들 수 있다. (즉, router-view가 있어야 한다.)
+// 각 요소의 기능 추가
 (0, _routesDefault.default)();
 
 },{"./App":"2kQhy","./routes":"3L9mC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2kQhy":[function(require,module,exports) {
+//! app.js
+// main.js 이전에 router-view라는 부분에 보여줄 movie-app 을 지정
+// 이부분은 지금에서는 하나의 앱 => movie app 을 만들기 때문에 하나의 파일로 존재하지만
+// 추후 여러 앱을 만들어서 main.js에 반영할 경우 이름이 변경될 여지가 있음
+// 또한, 모든 페이지에서 고정되어 보여질 화면 (header, footer side bar)을 지정할 수 있음
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _youjun = require("./core/youjun");
+var _theHeader = require("./components/TheHeader");
+var _theHeaderDefault = parcelHelpers.interopDefault(_theHeader);
+var _theFooter = require("./components/TheFooter");
+var _theFooterDefault = parcelHelpers.interopDefault(_theFooter);
 class App extends (0, _youjun.Component) {
     render() {
+        const theHeader = new (0, _theHeaderDefault.default)().el;
         const routerView = document.createElement("router-view");
-        this.el.append(routerView);
+        const theFooter = new (0, _theFooterDefault.default)().el;
+        this.el.append(theHeader, routerView, theFooter);
     }
 }
 exports.default = App;
 
-},{"./core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4Gvzt":[function(require,module,exports) {
-/// Component ///
-//* 해석:
+},{"./core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/TheHeader":"3Cyq4","./components/TheFooter":"b3x3c"}],"4Gvzt":[function(require,module,exports) {
+//! youjun.js는 가장 근간이 되는 논리구조를 담당한다.
+///? Component ///
+//* 해석 :
 // component 라는 클래스는 호출될 때 payload라는 매개변수를 받는다.
 // payload에서 tagName, state, props를 꺼낸다.
 // 그 다음 각각의 변수에 저장된 내용을 this를 사용해서 해당하는 각각의 변수에 할당해준다.
 // this를 통해 지정함으로써 class 안에서 만들어지는 모든 메소드(render())에서 this 라는 키워드로 참조해서 쓸 수 있다.
-//! 즉 가장 근간이 되는 논리구조를 담당한다.
+// 정리하면 웹페이지에 나타낼 tag를 명시하고 tag안에 담길 데이터를 정의한다.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Component", ()=>Component);
+//* routes의 index.js 에서 사용되며 [{ path: '#/', component: Home }] 와 같은 형식의 데이터를 받는다.
 parcelHelpers.export(exports, "createRouter", ()=>createRouter);
-//? 각각의 컴포넌트가 통신할 수 있도록 상태를 관리해주는 store
-/// store ///
+///? store ///
+//* 해석:
+// 각각의 컴포넌트가 통신할 수 있도록 통용되는 데이터 상태를 관리해주는 store
 parcelHelpers.export(exports, "Store", ()=>Store);
 class Component {
     constructor(payload = {}){
         const { tagName ="div" , state ={} , props ={}  } = payload;
         this.el = document.createElement(tagName);
         // this.render()에서 사용할 수 있도록 선언을 해준다.
+        // state는 자식이 부모의 데이터에 영향을 줄 데이터를 의미한다.
         this.state = state;
+        // props는 부모가 자식에게 줄 데이터를 의미한다.
         this.props = props;
+        // this.render를 통해 위에서 설정된 값들이 render() 를 통해 변화될 수 있도록 한다. => 다른 component들이 render()를 통해 여기에 지정된 값과 규칙을 근간으로 자신만의 모습을 가질 수 있게된다.
         this.render();
+    // 또한, 가장 기본적인 규칙을 이루고 있는 만큼 this.render()이 호출되는 함수 밑으로는 code가 작동되지 않는다. 
     }
     render() {}
 }
-/// Router ///
-//? 페이지를 구분해주고 각 페이지를 routes 의 index.js를 통해 app.js 반영해줌
+///? Router ///
+//* 해석 :
+// 입력된 주소에 따라 페이지를 구분해주고 각 페이지를 routes 의 index.js를 통해 app.js 반영해줌
+// 주소에 입력받은 api와 query에 대한 데이터도 처리함
 function routeRender(routes) {
     // 주소부분에 hash가 붙어 있는지 확인해서 *** 이 부분에서 발생할 수 있는 에러를 차단한다. 그리고 자동으로 component가 있는 화면으로 넘어갈 수 있게 된다.
-    if (!location.hash) history.replaceState(null, "", "/#/"); // history를 남기지 않으면서 창을 이동시킨다.
+    if (!location.hash) history.replaceState(null, "", "/#/"); // history를 남기지 않으면서 창을 이동시킨다. => 초기화면의 주소를 설정해준다.
+    //* app.js에서 지정한 movie app의 범위를 잡는다.
     const routerView = document.querySelector("router-view");
     // http://localhost:1234/#/about?name=youjun
     // location.hash = #/about?name=youjun
@@ -634,9 +661,10 @@ function routeRender(routes) {
     const query = queryString.split("&").reduce((acc, cur)=>{
         const [key, value] = cur.split("=");
         acc[key] = value;
-        return acc;
+        return acc; // => key(name)에 따른 value값을 객체 형태로 반환
     }, {});
-    history.replaceState(query, ""); // query가 history 객체의 state 속성에 저장된다. 즉, history의 state를 통해 주소에 저장된 query문을 전처리하여 저장후 쓸 수 있다.
+    history.replaceState(query, ""); // query가 history 객체의 state 속성에 저장된다.
+    // 즉,위와 같이 history의 state를 통해 주소에 저장된 query문을 전처리하여 저장후 쓸 수 있다.
     // 현재 페이지에 입력된 hash가 실제로 존재하는 지 확인 => 있으면 페이지 새로 랜더링 => *** 없으면 에러
     const currentRoute = routes.find((route)=>new RegExp(`${route.path}/?$`).test(hash));
     // routerView의 초기화
@@ -657,7 +685,9 @@ function createRouter(routes) {
 }
 class Store {
     constructor(state){
+        // 저장할 상태
         this.state = {};
+        // 지켜볼 상태
         this.observers = {};
         for(const key in state)// 정의하고자 하는 데이터가 새로운 값이 할당될 때마다 필요한 함수를 실행하기 위해 defineProperty를 사용한다.
         // this.state에 key를 할당하고, 이를 조작할 함수를 정의한다.
@@ -669,11 +699,19 @@ class Store {
                 state[key] = val;
                 // 아래와 같은 함수 실행
                 // this.observers['message']()
-                this.observers[key].forEach((observer)=>observer(val));
+                console.log("core" + key);
+                console.log("core" + val);
+                console.log(this.observers);
+                console.log(this.observers[key]);
+                if (Array.isArray(this.observers[key])) // 호출할 콜백이 있는 경우 => 에러방지
+                this.observers[key].forEach((observer)=>{
+                    observer(val);
+                });
             }
         });
     }
     // cb = callback function
+    // 이 함수를 통해 감시할 대상과 이벤트를 지정한다.
     // this.observers['message'] = () => {}
     // { message: () => {} } => 하나의 함수만을 등록할 수 있다.
     // 즉, 하나의 컴포넌트/기능만 할 수 있는 것이다. 두개 이상의 컴포넌트에 동시에 영향을 줄 수 없다.
@@ -716,21 +754,149 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"3L9mC":[function(require,module,exports) {
+},{}],"3Cyq4":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+class TheHeader extends (0, _youjun.Component) {
+    constructor(){
+        super({
+            tagName: "header",
+            state: {
+                menus: [
+                    {
+                        name: "Search",
+                        href: "#/"
+                    },
+                    {
+                        name: "Movie",
+                        href: "#/movie?id=tt4520988"
+                    },
+                    {
+                        name: "About",
+                        href: "#/about"
+                    }
+                ]
+            }
+        });
+        // 페이지가 바뀔 때마다 새로 랜더링 => class active 적용
+        window.addEventListener("popstate", ()=>{
+            this.render();
+        });
+    }
+    render() {
+        this.el.innerHTML = /* html */ `
+    <a href="#/" class="logo">
+      <span>OMDbAPI</span>.COM
+    </a>
+    <nav>
+      <ul>
+        ${this.state.menus.map((menu)=>{
+            // 이동할 페이지의 주소
+            const href = menu.href.split("?")[0];
+            // 실제 페이지의 주소
+            const hash = location.hash.split("?")[0];
+            const isActive = href === hash;
+            return /* html */ `
+          <li>
+            <a href="${menu.href}" class="${isActive ? "active" : ""}">
+              ${menu.name}
+            </a>
+          </li>
+          `;
+        }).join("")}
+      </ul>
+    </nav>
+    <a href="#/about" class="user">
+      <img src="https://lh3.googleusercontent.com/a/AAcHTtcg-XuKSKFMKu4nzKQdS1o-en3j5GsC_-C9I7kUyA=s576-c-no" alt="User">
+    </a>
+    `;
+    }
+}
+exports.default = TheHeader;
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"b3x3c":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+var _about = require("../store/about");
+var _aboutDefault = parcelHelpers.interopDefault(_about);
+class TheFooter extends (0, _youjun.Component) {
+    constructor(){
+        super({
+            tagName: "footer"
+        });
+    }
+    render() {
+        const { github , repository  } = (0, _aboutDefault.default).state;
+        this.el.innerHTML = /* html */ `
+    <div>
+      <a href="${repository}">
+        Github Repository
+      </a>
+  </div>
+  <div>
+    <a href="${github}">
+      ${new Date().getFullYear()}
+      ReasonJun
+    </a>
+  </div>
+    `;
+    }
+}
+exports.default = TheFooter;
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../store/about":"4RAJO"}],"4RAJO":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+exports.default = new (0, _youjun.Store)({
+    photo: "https://lh3.googleusercontent.com/a/AAcHTtcg-XuKSKFMKu4nzKQdS1o-en3j5GsC_-C9I7kUyA=s576-c-no",
+    name: "ReasonJun / Lee Eui Jun",
+    email: "tndhworl1998@gmail.com",
+    blog: "https://reasonjun.tistory.com/",
+    github: "https://github.com/YouJun-IWON",
+    repository: "https://github.com/YouJun-IWON/movie-app"
+});
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3L9mC":[function(require,module,exports) {
+//! routes :
+// (movie) app.js에서 지정한 (html) 부분에 표시할 웹(list)를 지정한다.
+// 배열을 통해 각각의 웹페이지를 나열하고 객체를 통해 각 페이지에서 보여질 component를 지정한다.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _youjun = require("../core/youjun");
 var _home = require("./Home");
 var _homeDefault = parcelHelpers.interopDefault(_home);
-// 여기서 지정된 component가 app.js의 router-view가 된다.
+var _movie = require("./Movie");
+var _movieDefault = parcelHelpers.interopDefault(_movie);
+var _about = require("./About");
+var _aboutDefault = parcelHelpers.interopDefault(_about);
+var _notFound = require("./NotFound");
+var _notFoundDefault = parcelHelpers.interopDefault(_notFound);
+// 여기서 path에 따라 지정된 component가 app.js의 router-view가 된다.
 exports.default = (0, _youjun.createRouter)([
     {
         path: "#/",
         component: (0, _homeDefault.default)
+    },
+    {
+        path: "#/movie",
+        component: (0, _movieDefault.default)
+    },
+    {
+        path: "#/about",
+        component: (0, _aboutDefault.default)
+    },
+    {
+        path: ".*",
+        component: (0, _notFoundDefault.default)
     }
 ]);
 
-},{"../core/youjun":"4Gvzt","./Home":"0JSNG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"0JSNG":[function(require,module,exports) {
+},{"../core/youjun":"4Gvzt","./Home":"0JSNG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Movie":"1LTyN","./About":"gdB30","./NotFound":"4fDiL"}],"0JSNG":[function(require,module,exports) {
+//! Home.js
+// home 화면을 component로 구성한다.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _youjun = require("../core/youjun");
@@ -738,17 +904,25 @@ var _headline = require("../components/Headline");
 var _headlineDefault = parcelHelpers.interopDefault(_headline);
 var _search = require("../components/Search");
 var _searchDefault = parcelHelpers.interopDefault(_search);
+var _movieList = require("../components/MovieList");
+var _movieListDefault = parcelHelpers.interopDefault(_movieList);
+var _movieListMore = require("../components/MovieListMore");
+var _movieListMoreDefault = parcelHelpers.interopDefault(_movieListMore);
 class Home extends (0, _youjun.Component) {
     render() {
         const headline = new (0, _headlineDefault.default)().el;
         const search = new (0, _searchDefault.default)().el;
+        const movieList = new (0, _movieListDefault.default)().el;
+        const movieListMore = new (0, _movieListMoreDefault.default)().el;
         this.el.classList.add("container");
-        this.el.append(headline, search);
+        this.el.append(headline, search, movieList, movieListMore);
     }
 }
 exports.default = Home;
 
-},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../components/Headline":"gaVgo","../components/Search":"jqPPz"}],"gaVgo":[function(require,module,exports) {
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../components/Headline":"gaVgo","../components/Search":"jqPPz","../components/MovieList":"8UDl3","../components/MovieListMore":"3ZUar"}],"gaVgo":[function(require,module,exports) {
+//! Home.js
+// home 화면에 쓰일 headline을 구성한다.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _youjun = require("../core/youjun");
@@ -772,32 +946,339 @@ class Headline extends (0, _youjun.Component) {
 exports.default = Headline;
 
 },{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jqPPz":[function(require,module,exports) {
+//! Search.js
+// home 화면의 search 컴포넌트를 구성한다.
+// 검색결과에 따른 movie 데이터를 지정해야 하는 만큼
+// store 폴더에 있는 movie.js와 연결한다.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _youjun = require("../core/youjun");
+var _movie = require("../store/movie");
+var _movieDefault = parcelHelpers.interopDefault(_movie);
 class Search extends (0, _youjun.Component) {
     render() {
         this.el.classList.add("search");
         this.el.innerHTML = /* html */ `
-					<input placeholder="Enter the movie title to search!" />
+    <!-- value 요소를 지정해서 뒤로가기를 진행했을 때 검색창에 입력된 값이 초기화되지 않도록 한다.  -->
+					<input value="${(0, _movieDefault.default).state.searchText}" placeholder="Enter the movie title to search!" />
 					<button class="btn btn-primary">
 						Search!
 					</button>
         `;
         const inputEl = this.el.querySelector("input");
         inputEl.addEventListener("input", ()=>{
-        //
+            // input 값을 movie 검색 api에 전송한다.
+            (0, _movieDefault.default).state.searchText = inputEl.value;
         });
         inputEl.addEventListener("keydown", (event)=>{
-            event.key;
+            if (event.key === "Enter" && (0, _movieDefault.default).state.searchText.trim()) // trim() => 앞 뒤 공백문자 제거
+            // 검색!
+            (0, _movie.searchMovies)(1);
         });
         const btnEl = this.el.querySelector(".btn");
         btnEl.addEventListener("click", ()=>{
-        //
+            if ((0, _movieDefault.default).state.searchText.trim()) // trim() => 앞 뒤 공백문자 제거
+            // 검색!
+            (0, _movie.searchMovies)(1);
         });
     }
 }
 exports.default = Search;
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../store/movie":"kq1bo"}],"kq1bo":[function(require,module,exports) {
+//! movie.js
+// 계속해서 변화될 수 있는 movie 데이터를 지정하고 상황에 따라 가공한다.
+// 사용할 movie 데이터의 형식을 결정하고 이 형식에 영향을 줄 수 있는 함수를 가진다.
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "searchMovies", ()=>searchMovies);
+parcelHelpers.export(exports, "getMovieDetails", ()=>getMovieDetails);
+var _youjun = require("../core/youjun");
+// 검색할 영화 입력 받기
+const store = new (0, _youjun.Store)({
+    // this.state에 저장
+    searchText: "",
+    page: 1,
+    pageMax: 1,
+    movies: [],
+    movie: {},
+    loading: false,
+    message: "Search for the movie title!"
+});
+exports.default = store;
+const searchMovies = async (page)=>{
+    store.state.loading = true;
+    store.state.page = page; // 더보기를 눌렀을 때 +1 이 된 page 값이 저장된다.
+    // 새로운 검색 이벤트가 발생했을 때(page = 1이 지정됐을 때) 기존 배열에 저장된 내용을 초기화 한다.
+    if (page === 1) {
+        store.state.movies = [];
+        store.state.message = "";
+    }
+    // error를 핸들링할 수 있게 만들어서 (네트워크 에러때문에) javascript가 멈추는 일이 없게 한다.
+    try {
+        const res = await fetch(`https://omdbapi.com?apikey=7035c60c&s=${store.state.searchText}&page=${page}`);
+        const { Search , totalResults , Response , Error  } = await res.json();
+        if (Response === "True") {
+            // 페이지 내용을 축적한다.
+            store.state.movies = [
+                ...store.state.movies,
+                ...Search
+            ];
+            // totalResults 라는 변수를 통해 최대 출력 가능한 page를 확인한다.
+            store.state.pageMax = Math.ceil(Number(totalResults) / 10);
+        } else store.state.message = Error;
+    } catch (error) {
+        console.log("searchMovies error:", error);
+    } finally{
+        store.state.loading = false;
+    }
+};
+const getMovieDetails = async (id)=>{
+    try {
+        const res = await fetch(`https://omdbapi.com?apikey=7035c60c&i=${id}&plot=full`);
+        store.state.movie = await res.json();
+    } catch (error) {
+        console.log("getMovieDetails error:", error);
+    }
+};
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8UDl3":[function(require,module,exports) {
+//! MovieList.js
+// home 화면의 movie list 컴포넌트를 구성한다.
+// movieStore의 상태를 추적하다가 변화되는 값(입력된 값)이 있으면
+// Search.js => movie.js => youjun.js 를 거쳐 나온
+// movieStore.state.movies에 저장된 값을 보여준다.
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+var _movie = require("../store/movie");
+var _movieDefault = parcelHelpers.interopDefault(_movie);
+var _movieItem = require("./MovieItem");
+var _movieItemDefault = parcelHelpers.interopDefault(_movieItem);
+class MovieList extends (0, _youjun.Component) {
+    // constructor를 만들어서 어떤 조건이 발생되면 movieStore.subscribe가 작동될 수 있도록(새로 검색할 때마다 웹페이지가 갱신될 수 있도록) 한다.
+    constructor(){
+        super();
+        // movieStore에 저장된 값 중에서 movies 라는 대상을 감시한다.
+        // 새로 movies가 갱신될 때마다 다시 render() 된다.
+        (0, _movieDefault.default).subscribe("movies", ()=>{
+            this.render();
+        });
+        (0, _movieDefault.default).subscribe("loading", ()=>{
+            this.render();
+        });
+        (0, _movieDefault.default).subscribe("message", ()=>{
+            this.render();
+        });
+    }
+    render() {
+        this.el.classList.add("movie-list");
+        this.el.innerHTML = /* html */ `
+        ${(0, _movieDefault.default).state.message ? `<div class="message">${(0, _movieDefault.default).state.message}</div>` : '<div class="movies"></div>'}
+        <div class="the-loader hide"></div>
+        `;
+        const moviesEl = this.el.querySelector(".movies");
+        // 에러 제거
+        moviesEl?.append(...(0, _movieDefault.default).state.movies.map((movie)=>new (0, _movieItemDefault.default)({
+                movie
+            }).el // movie = movie : movie
+        ));
+        const loaderEl = this.el.querySelector(".the-loader");
+        (0, _movieDefault.default).state.loading ? loaderEl.classList.remove("hide") : loaderEl.classList.add("hide");
+    }
+} //! 위와 같이 constructor를 지정한 이유
+ /*
+class Polygon {
+    constructor() {
+      this.name = 'Polygon';
+      this.render()
+    }
+    render() {
+      console.log('hello')
+      this.name = this.name.concat('-wow')
+    }
+  }
+  
+  const poly1 = new Polygon();
+  
+  console.log(poly1.name);
+  */  // console.log =>
+ // "hello"
+ // "Polygon-wow"
+ //* 해석 :
+ // 위의 내용처럼 hello가 먼저 출력된 후 "Polygon"이 나온다.
+ // 즉, constructor에 지정된 함수가 실행된 후 나온 결과를 바탕으로 constructor에 정의된 변수들의 상태를 변경하여 결과를 보여주는 것이다.
+ // 이는 class의 constructor를 사용하면 사용할(지정된) 변수들을 다양한 함수를 통해 수정하고 new (className)을 통해 결과물을 얻을 수 있다는 것이다.
+ // 상황에 따라 변화되는 데이터를 나타낼 시 보여줄 초기 세팅을 이룬다음에 어떤 특정 조건이 달성되었을 때 subscribe 와 같은 함수를 통해 가공된 데이터를 보여줄 수 있는 것이다.
+exports.default = MovieList;
+
+},{"../core/youjun":"4Gvzt","../store/movie":"kq1bo","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./MovieItem":"fAzE8"}],"fAzE8":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+class MovieItem extends (0, _youjun.Component) {
+    // 부모 컴포넌트(MovieList.js)를 통해 데이터를 받아서 사용하겠다. => props
+    constructor(props){
+        super({
+            props,
+            tagName: "a"
+        });
+    }
+    render() {
+        // console.log('this is state:' + JSON.stringify(this.state));
+        console.log("this is props:" + JSON.stringify(this.props));
+        const { movie  } = this.props;
+        this.el.setAttribute("href", `#/movie?id=${movie.imdbID}`);
+        this.el.classList.add("movie");
+        // img 태그로 출력하게 되면 각각 다른 Poster의 크기 때문에 layout이 깨질 수 있다.
+        // 그래서 아래 코드 같이 지정한 후 a 태그의 크기를 결정해 통일한다.
+        this.el.style.backgroundImage = `url(${movie.Poster})`;
+        this.el.innerHTML = /* html */ `
+    <div class="info">
+        <div class="year">
+            ${movie.Year}
+        </div>
+        <div class="title">
+            ${movie.Title}
+        </div>
+    </div>
+    `;
+    }
+}
+exports.default = MovieItem;
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3ZUar":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+var _movie = require("../store/movie");
+var _movieDefault = parcelHelpers.interopDefault(_movie);
+class MovieListMore extends (0, _youjun.Component) {
+    constructor(){
+        super({
+            tagName: "button"
+        });
+        // 더보기 버튼을 상황에 따라 보여주는 함수
+        // pageMax가 새로 갱신될 때 마다
+        (0, _movieDefault.default).subscribe("pageMax", ()=>{
+            const { page , pageMax  } = (0, _movieDefault.default).state;
+            pageMax > page ? this.el.classList.remove("hide") : this.el.classList.add("hide");
+        });
+    }
+    render() {
+        this.el.classList.add("btn", "view-more", "hide");
+        this.el.textContent = "View more..";
+        this.el.addEventListener("click", async ()=>{
+            // 영화 데이터가 존재하지 않을 시 '더보기' 버튼이 보여지는 것을 방지한다.
+            this.el.classList.add("hide");
+            await (0, _movie.searchMovies)((0, _movieDefault.default).state.page + 1);
+        });
+    }
+}
+exports.default = MovieListMore;
+
+},{"../core/youjun":"4Gvzt","../store/movie":"kq1bo","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1LTyN":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+var _movie = require("../store/movie");
+var _movieDefault = parcelHelpers.interopDefault(_movie);
+class Movie extends (0, _youjun.Component) {
+    async render() {
+        this.el.classList.add("container", "the-movie");
+        // skeleton을 넣기 위해 표시할 부분을 지정해준다.
+        this.el.innerHTML = /* html */ `
+      <div class="poster skeleton"></div>
+        <div class="specs">
+          <div class="title skeleton"></div>
+          <div class="labels skeleton"></div>
+          <div class="plot skeleton"></div>
+        </div>
+    `;
+        await (0, _movie.getMovieDetails)(history.state.id);
+        // router 기능을 통해 history의 state에 객체데이터로 저장했기 때문에 위와 같이 데이터를 가져 올 수 있다.
+        console.log((0, _movieDefault.default).state.movie);
+        const { movie  } = (0, _movieDefault.default).state;
+        // 이미지 리사이징
+        const bigPoster = movie.Poster.replace("SX300", "SX700");
+        this.el.innerHTML = /* html */ `
+    <div style="background-image: url(${bigPoster})" class="poster"></div>
+    <div class="specs">
+      <div class="title">${movie.Title}</div>
+      <div class="labels">
+        <span>${movie.Released}</span>
+        <!-- &nbsp; = 띄어쓰기 특수기호 -->
+        &nbsp;/&nbsp;
+        <span>${movie.Runtime}</span>
+        &nbsp;/&nbsp;
+        <span>${movie.Country}</span>
+      </div>
+      <div class="plot">${movie.Plot}</div>
+      <div>
+        <h3>Ratings</h3>
+        ${movie.Ratings.map((rating)=>{
+            return `<p>${rating.Source} - ${rating.Value}</p>`;
+        }).join("")}
+      </div>
+      <div>
+        <h3>Actors</h3>
+        <p>${movie.Actors}</p>
+      </div>
+      <div>
+        <h3>Director</h3>
+        <p>${movie.Director}</p>
+      </div>
+      <div>
+        <h3>Production</h3>
+        <p>${movie.Production}</p>
+      </div>
+      <div>
+        <h3>Genre</h3>
+        <p>${movie.Genre}</p>
+      </div>
+    </div>
+    `;
+    }
+}
+exports.default = Movie;
+
+},{"../core/youjun":"4Gvzt","../store/movie":"kq1bo","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gdB30":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+var _about = require("../store/about");
+var _aboutDefault = parcelHelpers.interopDefault(_about);
+class About extends (0, _youjun.Component) {
+    render() {
+        const { photo , name , email , github , blog  } = (0, _aboutDefault.default).state;
+        this.el.classList.add("container", "about");
+        this.el.innerHTML = /* html */ `
+      <div style="background-image: url(${photo});" class="photo"></div>
+      <p class="name">${name}</p>
+      <p><a href="https://mail.google.com/mail/?view=cm&fs=1&to=${email}" target="_blank">${email}</a></p>
+      <p><a href="${github}" target="_blank">GitHub</a></p>
+      <p><a href="${blog}" target="_blank">Blog</a></p>
+    `;
+    }
+}
+exports.default = About;
+
+},{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../store/about":"4RAJO"}],"4fDiL":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _youjun = require("../core/youjun");
+class NotFound extends (0, _youjun.Component) {
+    render() {
+        this.el.classList.add("container", "not-found");
+        this.el.innerHTML = /* html */ `
+    <h1>
+      Sorry.. <br>
+      Page Not Found
+    </h1>
+    `;
+    }
+}
+exports.default = NotFound;
 
 },{"../core/youjun":"4Gvzt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["f3BSW","gLLPy"], "gLLPy", "parcelRequire6588")
 
