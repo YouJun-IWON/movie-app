@@ -1,6 +1,6 @@
 //! main.js
 // html에 있는 요소를 지정하여 컴포넌트로 구성된 app.js에 표시될 위치를 지정한다.
-// 이 파일은 보통 하나의 파일로만 존재하며 다양한 app.js를 html의 요소에 적재적소 하는 역할을 함 
+// 이 파일은 보통 하나의 파일로만 존재하며 다양한 app.js를 html의 요소에 적재적소 하는 역할을 함
 
 import App from './App';
 import router from './routes';
@@ -15,3 +15,10 @@ root.append(new App().el);
 
 // 각 요소의 기능 추가
 router();
+
+// 즉시실행 함수
+(async () => {
+  const res = await fetch('/api/test');
+  const json = await res.json();
+  console.log('/api/test/', json);
+})();

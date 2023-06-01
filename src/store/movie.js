@@ -29,9 +29,14 @@ export const searchMovies = async (page) => {
 
   // error를 핸들링할 수 있게 만들어서 (네트워크 에러때문에) javascript가 멈추는 일이 없게 한다.
   try {
-    const res = await fetch(
-      `https://omdbapi.com?apikey=7035c60c&s=${store.state.searchText}&page=${page}`
-    );
+    // api 에 따라 수정됨
+    const res = await fetch('/api/movie.js', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: store.state.searchText,
+        page: page,
+      }),
+    });
     const { Search, totalResults, Response, Error } = await res.json();
 
     if (Response === 'True') {
@@ -52,12 +57,15 @@ export const searchMovies = async (page) => {
 
 export const getMovieDetails = async (id) => {
   try {
-    const res = await fetch(
-      `https://omdbapi.com?apikey=7035c60c&i=${id}&plot=full`
-    );
+    // api 에 따라 수정됨
+    const res = await fetch('/api/movie.js', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: id,
+      }),
+    });
     store.state.movie = await res.json();
   } catch (error) {
     console.log('getMovieDetails error:', error);
   }
 };
-
