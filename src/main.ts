@@ -9,7 +9,7 @@ import router from './routes';
 const root = document.querySelector('#root');
 
 // element composition
-root.append(new App().el);
+root?.append(new App().el);
 
 // Need to have an element first.
 // Then can make routes to assign to each element.

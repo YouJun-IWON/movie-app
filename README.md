@@ -27,3 +27,7 @@ serverless functions 란?
 
 ##tip 4
 .env 파일을 만들어서 github에도 apikey가 등록되지 못하게 설정한다. 그리고 vercel 홈페이지에 따로 쓰고 있는 환경변수를 설정해 준다. 
+
+##tip 5
+https://transform.tools/
+위의 사이트에 들어가면 빠르게 typescript로 변환할 수 있다.

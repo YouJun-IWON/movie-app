@@ -8,8 +8,21 @@
 // By specifying it through 'this', all methods(render()) created in the class can refer to it with the keyword 'this'.
 // To define this class, specify the tag to be displayed on the web page and define the data to be included in the tag.
 
+interface ComponentPayload {
+  tagName?: string;
+  props?: {
+    [key: string]: unknown;
+  };
+  state?: {
+    [key: string]: unknown;
+  };
+}
+
 export class Component {
-  constructor(payload = {}) {
+  public el;
+  public props;
+  public state;
+  constructor(payload: ComponentPayload = {}) {
     const { tagName = 'div', state = {}, props = {} } = payload;
     this.el = document.createElement(tagName);
     // It declares so that it can be used in this render().
@@ -29,7 +42,12 @@ export class Component {
 //* Interpretation :
 // Classify Web pages according to the route(address) entered by 'index.js' of 'routes'.
 // Reflect the web components divided according to the separated routes to 'app.js'(router-view)
-function routeRender(routes) {
+interface Route {
+  path: string;
+  component: typeof Component;
+}
+type Routes = Route[];
+function routeRender(routes: Routes) {
   // Check if hash is attached to the address part, and blocks errors that occur '***'.
   // And automatically move to the screen where the component is located.
   if (!location.hash) {
@@ -42,11 +60,15 @@ function routeRender(routes) {
   // location.hash = #/about?name=youjun
   const [hash, queryString = ''] = location.hash.split('?');
 
+  interface Query {
+    [key: string]: string;
+  }
+
   const query = queryString.split('&').reduce((acc, cur) => {
     const [key, value] = cur.split('=');
     acc[key] = value;
     return acc; // => Return value according to key(Name) in object form.
-  }, {});
+  }, {} as Query);
 
   history.replaceState(query, ''); // The query is stored in the state property of the history object.
   // In other words, through the state of history, the query statement stored in the address can be preprocessed, stored, and then used.
@@ -56,16 +78,18 @@ function routeRender(routes) {
     new RegExp(`${route.path}/?$`).test(hash)
   );
   // Initialization of 'router-view'
-  routerView.innerHTML = '';
-  // Assign to routerView
-  routerView.append(new currentRoute.component().el);
+  if (routerView) {
+    routerView.innerHTML = '';
+    // Assign to routerView
+    currentRoute && routerView.append(new currentRoute.component().el);
+  }
 
   // When moving the page, the scroll position is fixed at the top.
   window.scrollTo(0, 0);
 }
 
 //* It it used in 'index.js' of routes and receives data in the format of [{ path: '#/', component: Home }].
-export function createRouter(routes) {
+export function createRouter(routes: Routes) {
   return function () {
     window.addEventListener('popstate', () => {
       // popstate : Fire when address part changes
@@ -78,12 +102,21 @@ export function createRouter(routes) {
 ///? store ///
 //* Interpretation:
 // A 'store' that manages the common data state so that each component can communicate.
-export class Store {
-  constructor(state) {
-    // state to save
-    this.state = {};
-    // state to observe
-    this.observers = {};
+
+interface StoreObservers {
+  [key: string]: SubscribeCallback[];
+}
+
+interface SubscribeCallback {
+  (arg: unknown): void;
+}
+
+export class Store<S> {
+  // state to save
+  public state = {} as S;
+  // state to observe
+  private observers = {} as StoreObservers;
+  constructor(state: S) {
     for (const key in state) {
       // Use 'defineProperty' to execute the necessary function whenever a new value is assigned to the existing data.
       // Through the 'get' function, you can get the data that the actual state has.
@@ -114,7 +147,7 @@ export class Store {
 
   // Can register and use various functions in the following way.
   // { message: [ () => {}, () => {}, () => {} ] }
-  subscribe(key, cb) {
+  subscribe(key: string, cb: SubscribeCallback) {
     Array.isArray(this.observers[key])
       ? this.observers[key].push(cb)
       : (this.observers[key] = [cb]);
