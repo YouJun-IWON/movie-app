@@ -29,4 +29,10 @@ Functions/services that can be used immediately by writing the function without 
 
 
 ##tip 4
+
 Create an .env file to prevent apikey from being registered on github. And set the environment variable that is used separately on the vercel homepage.
+
+##tip 5
+https://transform.tools/
+If you enter the above site, you can quickly convert it to typescript.
+

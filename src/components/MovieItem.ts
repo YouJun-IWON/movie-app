@@ -1,8 +1,15 @@
 import { Component } from '../core/youjun';
+import { SimpleMovie } from '../store/movie';
+
+interface Props {
+  [key: string]: unknown
+  movie: SimpleMovie
+}
 
 export default class MovieItem extends Component {
+  public props!: Props
   // Will receive data through the parent component (MovieList.js) and use it. => props
-  constructor(props) {
+  constructor(props: Props) {
     super({
       props,
       tagName: 'a',
